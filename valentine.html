@@ -26,7 +26,7 @@
             height: 100vh;
             width: 100vw;
             background-color: var(--bg);
-            overflow: hidden; /* Strict no-scroll */
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -59,7 +59,6 @@
             width: 90%;
             z-index: 100;
             position: relative;
-            /* Important: Transition only transform to avoid conflict */
             transition: opacity 0.3s ease;
         }
 
@@ -109,12 +108,13 @@
             background-color: #ff2e43;
         }
 
-        /* The NO button style */
+        /* Кнопка НЕТ */
         .btn-no {
             background-color: #f1f2f6;
             color: var(--dark);
-            z-index: 9999; /* Super high z-index */
-            transition: top 0.15s ease, left 0.15s ease; /* Fast smooth movement */
+            /* Важно: transition делаем быстрым, чтобы она убегала резко */
+            transition: left 0.1s ease, top 0.1s ease;
+            z-index: 9999; /* Поверх всего */
         }
 
         /* Form Styles */
@@ -246,14 +246,14 @@
             heart.style.animationDuration = Math.random() * 3 + 2 + 's'; 
             heart.style.opacity = Math.random();
             document.body.appendChild(heart);
-
             setTimeout(() => heart.remove(), 5000);
         }
 
         heartInterval = setInterval(createHeart, 500);
 
-        // --- "No" Button Logic (THE FIX) ---
+        // --- "No" Button Logic (FIXED) ---
         function moveButton(e) {
+            // Stop touch from firing click
             if(e && e.type === 'touchstart') e.preventDefault();
 
             noAttempts++;
@@ -265,37 +265,35 @@
                 easterEggText.textContent = "Okay okay 😌 Love always wins ❤️";
             }
 
-            // --- CRITICAL FIX: Move button to BODY to escape card container ---
+            // --- ВАЖНОЕ ИСПРАВЛЕНИЕ: Переносим кнопку в BODY ---
+            // Это гарантирует, что она не будет обрезана карточкой
             if (btnNo.parentNode !== document.body) {
+                // Вычисляем текущие координаты, чтобы не было прыжка
+                const rect = btnNo.getBoundingClientRect();
                 document.body.appendChild(btnNo);
-                btnNo.style.position = 'fixed'; // Now it is relative to the viewport
+                btnNo.style.position = 'fixed';
+                btnNo.style.left = rect.left + 'px';
+                btnNo.style.top = rect.top + 'px';
             }
 
-            // Get viewport dimensions
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
+            // Размеры экрана
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
             
-            // Get button dimensions
-            const btnWidth = btnNo.offsetWidth;
-            const btnHeight = btnNo.offsetHeight;
+            // Размеры кнопки
+            const btnW = btnNo.offsetWidth;
+            const btnH = btnNo.offsetHeight;
+            const padding = 20; // Отступ от краев
 
-            // Padding to ensure it stays fully on screen
-            const padding = 20;
+            // Случайные координаты
+            const maxLeft = vw - btnW - padding;
+            const maxTop = vh - btnH - padding;
 
-            // Calculate Max Coordinates
-            const maxX = viewportWidth - btnWidth - padding;
-            const maxY = viewportHeight - btnHeight - padding;
+            // Гарантируем, что координаты положительные (больше padding)
+            const randomX = Math.max(padding, Math.random() * maxLeft);
+            const randomY = Math.max(padding, Math.random() * maxTop);
 
-            // Generate Random Coordinates
-            let randomX = Math.random() * maxX;
-            let randomY = Math.random() * maxY;
-
-            // CLAMPING: Force values to be inside screen no matter what
-            // Ensure X is at least 'padding' and at most 'maxX'
-            randomX = Math.max(padding, Math.min(randomX, maxX));
-            randomY = Math.max(padding, Math.min(randomY, maxY));
-
-            // Apply coords
+            // Применяем
             btnNo.style.left = randomX + 'px';
             btnNo.style.top = randomY + 'px';
         }
@@ -306,10 +304,8 @@
 
         // --- "Yes" Button Logic ---
         function handleYes() {
-            // Remove the floating "No" button if it's attached to body
-            if (btnNo.parentNode === document.body) {
-                btnNo.remove();
-            }
+            // Удаляем кнопку "Нет", если она летает по экрану
+            if(btnNo) btnNo.remove();
 
             const step1 = document.getElementById('step-1');
             const step2 = document.getElementById('step-2');
@@ -367,6 +363,7 @@
             })
             .catch(err => {
                 console.error("Error:", err);
+                // Fallback success
                 setTimeout(showSuccessMessage, 1000);
             });
         }
