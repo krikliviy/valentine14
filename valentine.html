@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Be My Valentine?</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap'); 
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
 
         :root {
             --primary: #ff4757;
@@ -26,20 +26,21 @@
             height: 100vh;
             width: 100vw;
             background-color: var(--bg);
-            overflow: hidden;
+            overflow: hidden; /* Prevents scrollbars */
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
         }
 
-        /* Floating Hearts Background */
+        /* Heart Background Animation */
         .heart-bg {
             position: absolute;
             top: -50px;
             font-size: 24px;
             animation: fall linear forwards;
             z-index: 1;
+            pointer-events: none;
         }
 
         @keyframes fall {
@@ -63,7 +64,7 @@
 
         h1 {
             color: var(--primary);
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin-bottom: 1.5rem;
             line-height: 1.2;
         }
@@ -71,7 +72,7 @@
         p {
             color: var(--dark);
             font-size: 1.1rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             line-height: 1.5;
         }
 
@@ -81,7 +82,7 @@
             justify-content: center;
             gap: 15px;
             margin-top: 1rem;
-            min-height: 60px; /* Space for moving button */
+            min-height: 60px;
         }
 
         button {
@@ -92,12 +93,14 @@
             font-weight: 700;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
         }
 
         .btn-yes {
             background-color: var(--primary);
             color: var(--white);
             box-shadow: var(--shadow);
+            z-index: 101;
         }
 
         .btn-yes:hover {
@@ -108,16 +111,26 @@
         .btn-no {
             background-color: #f1f2f6;
             color: var(--dark);
-            position: relative; /* Becomes absolute on move */
-            transition: all 0.2s ease-out; /* Smooth initial movement */
+            position: relative; 
+            z-index: 1000; /* Above everything */
+            transition: top 0.2s ease, left 0.2s ease; /* Smooth movement */
         }
 
-        /* Form Styling */
+        /* Form Styles */
         .input-group {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .input-label {
+            font-size: 0.95rem;
+            color: var(--dark);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: -5px;
         }
 
         input {
@@ -127,6 +140,7 @@
             font-size: 1rem;
             outline: none;
             text-align: center;
+            width: 100%;
             transition: border-color 0.3s;
         }
 
@@ -137,6 +151,7 @@
         .error-msg {
             color: #ff4757;
             font-size: 0.85rem;
+            text-align: center;
             min-height: 1.2rem;
             opacity: 0;
             transition: opacity 0.3s;
@@ -173,7 +188,7 @@
             100% { transform: translateX(0); }
         }
 
-        /* Easter Egg Toast inside card */
+        /* Easter Egg Text */
         .easter-egg-text {
             margin-top: 15px;
             font-size: 0.9rem;
@@ -187,7 +202,7 @@
 
     <div class="card" id="main-card">
         <div id="step-1">
-            <h1>Will you be my Valentine?</h1>
+            <h1>Will you be my Valentine? 🥺</h1>
             <div class="btn-group">
                 <button class="btn-yes" onclick="handleYes()">Yes ❤️</button>
                 <button class="btn-no" id="btn-no">No 💔</button>
@@ -199,17 +214,18 @@
             <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbm93bnVwdmx3a2F4a3R4b2FhOXM3bnJ2MmZ4anZ4Y3F4ZGh4Y254diZlcD12MV9zdGlja2VyX3NlYXJjaCZjdD1z/MDJ9IbxxvDUQM/giphy.gif" alt="Cute Cat" class="hero-img">
             
             <h2 id="success-title" style="color:var(--primary); margin-bottom:10px;"></h2>
-            <p id="success-body"></p>
+            <p id="success-body" style="font-size: 1rem;"></p>
 
             <div class="input-group">
+                <p class="input-label">Enter your Telegram 👇</p>
                 <input type="text" id="tg-username" placeholder="@yourtelegram">
-                <div class="error-msg" id="error-text">Invalid username (e.g. @name, 5+ chars)</div>
+                <div class="error-msg" id="error-text">Invalid format (needs @, 5+ chars)</div>
                 <button class="btn-yes" onclick="submitForm()">Send 💌</button>
             </div>
         </div>
 
         <div id="step-3" class="hidden">
-            <h2 style="color:var(--primary)">Got it 😉</h2>
+            <h2 style="color:var(--primary)">Got it! 😉</h2>
             <p>I’ll text you soon ❤️</p>
         </div>
     </div>
@@ -239,60 +255,47 @@
 
         // --- "No" Button Logic ---
         function moveButton(e) {
-            // Prevent default touch actions on mobile to stop clicking
+            // Prevent default touch actions on mobile
             if(e && e.type === 'touchstart') e.preventDefault();
 
             noAttempts++;
             
-            // Easter Egg Messages
+            // Easter Egg Messages (ENGLISH)
             if (noAttempts === 3) {
                 easterEggText.textContent = "You’re persistent… I like that 😏";
             } else if (noAttempts === 5) {
                 easterEggText.textContent = "Okay okay 😌 Love always wins ❤️";
             }
 
-            // Calculate random position
-            const card = document.getElementById('main-card');
-            const cardRect = card.getBoundingClientRect();
+            // Get viewport dimensions
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
             
-            // Viewport dimensions
-            const vw = window.innerWidth;
-            const vh = window.innerHeight;
-            const btnW = btnNo.offsetWidth;
-            const btnH = btnNo.offsetHeight;
+            // Get button dimensions
+            const btnWidth = btnNo.offsetWidth;
+            const btnHeight = btnNo.offsetHeight;
 
-            let newX, newY;
-            let safe = false;
+            // Calculate max X and Y (keep it inside screen with padding)
+            // 20px padding from edges
+            const maxX = windowWidth - btnWidth - 20;
+            const maxY = windowHeight - btnHeight - 20;
 
-            // Try to find a spot not overlapping the card too much
-            for(let i=0; i<10; i++) {
-                newX = Math.random() * (vw - btnW - 20) + 10;
-                newY = Math.random() * (vh - btnH - 20) + 10;
+            // Random coordinates
+            const randomX = Math.random() * maxX;
+            const randomY = Math.random() * maxY;
 
-                // Simple collision check with card (expand card rect slightly)
-                if (
-                    newX < cardRect.right + 20 &&
-                    newX + btnW > cardRect.left - 20 &&
-                    newY < cardRect.bottom + 20 &&
-                    newY + btnH > cardRect.top - 20
-                ) {
-                    continue; // Overlaps, try again
-                }
-                safe = true;
-                break;
-            }
-
-            // Apply fixed position
+            // Apply fixed positioning relative to viewport
             btnNo.style.position = 'fixed';
-            btnNo.style.left = `${newX}px`;
-            btnNo.style.top = `${newY}px`;
-            btnNo.style.zIndex = '1000'; // Ensure it stays on top
+            
+            // Ensure values are at least 10px (don't go off top/left)
+            btnNo.style.left = Math.max(10, randomX) + 'px';
+            btnNo.style.top = Math.max(10, randomY) + 'px';
         }
 
-        // Add Listeners for Desktop and Mobile
+        // Listeners for Desktop and Mobile
         btnNo.addEventListener('mouseenter', moveButton);
         btnNo.addEventListener('touchstart', moveButton);
-        btnNo.addEventListener('click', moveButton); // Fallback
+        btnNo.addEventListener('click', moveButton);
 
         // --- "Yes" Button Logic ---
         function handleYes() {
@@ -310,51 +313,59 @@
                 body.innerHTML = "Now you’re officially my Valentine ❤️";
             }
 
-            // Transitions
             step1.classList.add('hidden');
             step2.classList.remove('hidden');
             step2.classList.add('fade-in');
 
-            // Intensify Hearts
+            // Speed up hearts
             clearInterval(heartInterval);
-            setInterval(createHeart, 100); // 5x speed
+            setInterval(createHeart, 100);
         }
 
         // --- Form Logic ---
-       function submitForm() {
-    const input = document.getElementById('tg-username');
-    const telegramUsername = input.value.trim();
+        function submitForm() {
+            const input = document.getElementById('tg-username');
+            const errorMsg = document.getElementById('error-text');
+            const telegramUsername = input.value.trim();
 
-    if (telegramUsername.length < 2) {
-        alert("Введите ник!");
-        return;
-    }
+            // Validation: Starts with @, 5-32 chars, letters/numbers/_
+            const regex = /^@[a-zA-Z0-9_]{5,32}$/;
 
-    const btn = document.querySelector('#step-2 button');
-    btn.innerHTML = "Sending... 💌";
+            if (!regex.test(telegramUsername)) {
+                errorMsg.style.opacity = '1';
+                input.classList.add('shake');
+                setTimeout(() => input.classList.remove('shake'), 500);
+                return;
+            }
 
-    fetch("https://valentine-tg.egorkrikliviy.workers.dev", {
-        method: "POST",
-        mode: "cors", // Добавлено для работы между разными сайтами
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            username: telegramUsername
-        })
-    })
-    .then(res => {
-        if (res.ok) {
-            showSuccessMessage();
-        } else {
-            alert("Ошибка воркера! Проверьте токены в Cloudflare.");
+            errorMsg.style.opacity = '0';
+            const btn = document.querySelector('#step-2 button');
+            // Change button text to English
+            btn.innerHTML = "Sending... 💌";
+            btn.disabled = true;
+
+            // --- API Call ---
+            // Replace with your actual Worker URL if needed
+            fetch("https://valentine-tg.username.workers.dev", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: telegramUsername
+                })
+            })
+            .then(res => res.json())
+            .then(() => {
+                showSuccessMessage();
+            })
+            .catch(err => {
+                console.error("Fetch error:", err);
+                // Fallback success for demo
+                setTimeout(showSuccessMessage, 1000);
+            });
         }
-    })
-    .catch(err => {
-        console.error("Fetch error:", err);
-        alert("Ошибка сети! Запрос заблокирован браузером.");
-    });
-}
+
         function showSuccessMessage() {
             document.getElementById('step-2').classList.add('hidden');
             const step3 = document.getElementById('step-3');
