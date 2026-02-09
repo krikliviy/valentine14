@@ -321,48 +321,40 @@
         }
 
         // --- Form Logic ---
-        function submitForm() {
-            const input = document.getElementById('tg-username');
-            const errorMsg = document.getElementById('error-text');
-            const telegramUsername = input.value.trim();
+       function submitForm() {
+    const input = document.getElementById('tg-username');
+    const telegramUsername = input.value.trim();
 
-            // Validation: Starts with @, 5-32 chars, letters/numbers/_
-            const regex = /^@[a-zA-Z0-9_]{5,32}$/;
+    if (telegramUsername.length < 2) {
+        alert("Введите ник!");
+        return;
+    }
 
-            if (!regex.test(telegramUsername)) {
-                errorMsg.style.opacity = '1';
-                input.classList.add('shake');
-                setTimeout(() => input.classList.remove('shake'), 500);
-                return;
-            }
+    const btn = document.querySelector('#step-2 button');
+    btn.innerHTML = "Sending... 💌";
 
-            errorMsg.style.opacity = '0';
-            const btn = document.querySelector('#step-2 button');
-            btn.innerHTML = "Sending... 💌";
-            btn.disabled = true;
-
-            // --- API Call ---
-            // Note: Replace the URL below with your actual worker URL if needed.
-            fetch("https://valentine-tg.egorkrikliviy.workers.dev", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    username: telegramUsername
-                })
-            })
-            .then(res => res.json())
-            .then(() => {
-                showSuccessMessage();
-            })
-            .catch(err => {
-                console.error("Fetch error:", err);
-                // Fallback for demo purposes if backend isn't real
-                setTimeout(showSuccessMessage, 1000); 
-            });
+    fetch("https://valentine-tg.egorkrikliviy.workers.dev", {
+        method: "POST",
+        mode: "cors", // Добавлено для работы между разными сайтами
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username: telegramUsername
+        })
+    })
+    .then(res => {
+        if (res.ok) {
+            showSuccessMessage();
+        } else {
+            alert("Ошибка воркера! Проверьте токены в Cloudflare.");
         }
-
+    })
+    .catch(err => {
+        console.error("Fetch error:", err);
+        alert("Ошибка сети! Запрос заблокирован браузером.");
+    });
+}
         function showSuccessMessage() {
             document.getElementById('step-2').classList.add('hidden');
             const step3 = document.getElementById('step-3');
