@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Be My Valentine?</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #ff4757;
+            --dark: #2f3542;
+            --bg: #ffe2e6;
+            --white: #ffffff;
+            --shadow: 0 10px 25px rgba(255, 71, 87, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            background-color: var(--bg);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Floating Hearts Background */
+        .heart-bg {
+            position: absolute;
+            top: -50px;
+            font-size: 24px;
+            animation: fall linear forwards;
+            z-index: 1;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); }
+        }
+
+        /* Main Card */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            z-index: 100;
+            transition: transform 0.3s ease, height 0.3s ease;
+            position: relative;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        p {
+            color: var(--dark);
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 1rem;
+            min-height: 60px; /* Space for moving button */
+        }
+
+        button {
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-yes {
+            background-color: var(--primary);
+            color: var(--white);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-yes:hover {
+            transform: scale(1.05);
+            background-color: #ff2e43;
+        }
+
+        .btn-no {
+            background-color: #f1f2f6;
+            color: var(--dark);
+            position: relative; /* Becomes absolute on move */
+            transition: all 0.2s ease-out; /* Smooth initial movement */
+        }
+
+        /* Form Styling */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        input {
+            padding: 12px 15px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        .error-msg {
+            color: #ff4757;
+            font-size: 0.85rem;
+            min-height: 1.2rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .hero-img {
+            width: 100%;
+            max-width: 250px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Easter Egg Toast inside card */
+        .easter-egg-text {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #747d8c;
+            font-style: italic;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="main-card">
+        <div id="step-1">
+            <h1>Will you be my Valentine?</h1>
+            <div class="btn-group">
+                <button class="btn-yes" onclick="handleYes()">Yes ❤️</button>
+                <button class="btn-no" id="btn-no">No 💔</button>
+            </div>
+            <div class="easter-egg-text" id="easter-egg"></div>
+        </div>
+
+        <div id="step-2" class="hidden">
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbm93bnVwdmx3a2F4a3R4b2FhOXM3bnJ2MmZ4anZ4Y3F4ZGh4Y254diZlcD12MV9zdGlja2VyX3NlYXJjaCZjdD1z/MDJ9IbxxvDUQM/giphy.gif" alt="Cute Cat" class="hero-img">
+            
+            <h2 id="success-title" style="color:var(--primary); margin-bottom:10px;"></h2>
+            <p id="success-body"></p>
+
+            <div class="input-group">
+                <input type="text" id="tg-username" placeholder="@yourtelegram">
+                <div class="error-msg" id="error-text">Invalid username (e.g. @name, 5+ chars)</div>
+                <button class="btn-yes" onclick="submitForm()">Send 💌</button>
+            </div>
+        </div>
+
+        <div id="step-3" class="hidden">
+            <h2 style="color:var(--primary)">Got it 😉</h2>
+            <p>I’ll text you soon ❤️</p>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        let noAttempts = 0;
+        let heartInterval;
+        const btnNo = document.getElementById('btn-no');
+        const easterEggText = document.getElementById('easter-egg');
+
+        // --- Heart Animation ---
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart-bg');
+            heart.innerHTML = ['❤️', '💖', '💕', '💗'][Math.floor(Math.random() * 4)];
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = Math.random() * 3 + 2 + 's'; 
+            heart.style.opacity = Math.random();
+            document.body.appendChild(heart);
+
+            setTimeout(() => heart.remove(), 5000);
+        }
+
+        // Start slow hearts
+        heartInterval = setInterval(createHeart, 500);
+
+        // --- "No" Button Logic ---
+        function moveButton(e) {
+            // Prevent default touch actions on mobile to stop clicking
+            if(e && e.type === 'touchstart') e.preventDefault();
+
+            noAttempts++;
+            
+            // Easter Egg Messages
+            if (noAttempts === 3) {
+                easterEggText.textContent = "You’re persistent… I like that 😏";
+            } else if (noAttempts === 5) {
+                easterEggText.textContent = "Okay okay 😌 Love always wins ❤️";
+            }
+
+            // Calculate random position
+            const card = document.getElementById('main-card');
+            const cardRect = card.getBoundingClientRect();
+            
+            // Viewport dimensions
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const btnW = btnNo.offsetWidth;
+            const btnH = btnNo.offsetHeight;
+
+            let newX, newY;
+            let safe = false;
+
+            // Try to find a spot not overlapping the card too much
+            for(let i=0; i<10; i++) {
+                newX = Math.random() * (vw - btnW - 20) + 10;
+                newY = Math.random() * (vh - btnH - 20) + 10;
+
+                // Simple collision check with card (expand card rect slightly)
+                if (
+                    newX < cardRect.right + 20 &&
+                    newX + btnW > cardRect.left - 20 &&
+                    newY < cardRect.bottom + 20 &&
+                    newY + btnH > cardRect.top - 20
+                ) {
+                    continue; // Overlaps, try again
+                }
+                safe = true;
+                break;
+            }
+
+            // Apply fixed position
+            btnNo.style.position = 'fixed';
+            btnNo.style.left = `${newX}px`;
+            btnNo.style.top = `${newY}px`;
+            btnNo.style.zIndex = '1000'; // Ensure it stays on top
+        }
+
+        // Add Listeners for Desktop and Mobile
+        btnNo.addEventListener('mouseenter', moveButton);
+        btnNo.addEventListener('touchstart', moveButton);
+        btnNo.addEventListener('click', moveButton); // Fallback
+
+        // --- "Yes" Button Logic ---
+        function handleYes() {
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            const title = document.getElementById('success-title');
+            const body = document.getElementById('success-body');
+
+            // Logic for content based on attempts
+            if (noAttempts === 0) {
+                title.innerText = "Straight to YES? 😳";
+                body.innerHTML = "That was easy…<br>You’re definitely my Valentine ❤️";
+            } else {
+                title.innerText = "Well… you had no choice 😌";
+                body.innerHTML = "Now you’re officially my Valentine ❤️";
+            }
+
+            // Transitions
+            step1.classList.add('hidden');
+            step2.classList.remove('hidden');
+            step2.classList.add('fade-in');
+
+            // Intensify Hearts
+            clearInterval(heartInterval);
+            setInterval(createHeart, 100); // 5x speed
+        }
+
+        // --- Form Logic ---
+        function submitForm() {
+            const input = document.getElementById('tg-username');
+            const errorMsg = document.getElementById('error-text');
+            const telegramUsername = input.value.trim();
+
+            // Validation: Starts with @, 5-32 chars, letters/numbers/_
+            const regex = /^@[a-zA-Z0-9_]{5,32}$/;
+
+            if (!regex.test(telegramUsername)) {
+                errorMsg.style.opacity = '1';
+                input.classList.add('shake');
+                setTimeout(() => input.classList.remove('shake'), 500);
+                return;
+            }
+
+            errorMsg.style.opacity = '0';
+            const btn = document.querySelector('#step-2 button');
+            btn.innerHTML = "Sending... 💌";
+            btn.disabled = true;
+
+            // --- API Call ---
+            // Note: Replace the URL below with your actual worker URL if needed.
+            fetch("https://valentine-tg.egorkrikliviy.workers.dev/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: telegramUsername
+                })
+            })
+            .then(res => res.json())
+            .then(() => {
+                showSuccessMessage();
+            })
+            .catch(err => {
+                console.error("Fetch error:", err);
+                // Fallback for demo purposes if backend isn't real
+                setTimeout(showSuccessMessage, 1000); 
+            });
+        }
+
+        function showSuccessMessage() {
+            document.getElementById('step-2').classList.add('hidden');
+            const step3 = document.getElementById('step-3');
+            step3.classList.remove('hidden');
+            step3.classList.add('fade-in');
+        }
+    </script>
+</body>
+</html>
