@@ -83,6 +83,8 @@
             gap: 15px;
             margin-top: 1rem;
             min-height: 60px;
+            position: relative;
+            z-index: 102; /* Ensure buttons are above card content */
         }
 
         button {
@@ -92,7 +94,7 @@
             font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
             white-space: nowrap;
         }
 
@@ -101,10 +103,12 @@
             color: var(--white);
             box-shadow: var(--shadow);
             z-index: 101;
+            /* Important for scaling effect */
+            transform-origin: center; 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
 
         .btn-yes:hover {
-            transform: scale(1.05);
             background-color: #ff2e43;
         }
 
@@ -203,7 +207,7 @@
         <div id="step-1">
             <h1>Will you be my Valentine? 🥺</h1>
             <div class="btn-group" id="btn-container">
-                <button class="btn-yes" onclick="handleYes()">Yes ❤️</button>
+                <button class="btn-yes" id="btn-yes" onclick="handleYes()">Yes ❤️</button>
                 <button class="btn-no" id="btn-no">No 💔</button>
             </div>
             <div class="easter-egg-text" id="easter-egg"></div>
@@ -236,6 +240,7 @@
         let noAttempts = 0;
         let heartInterval;
         const btnNo = document.getElementById('btn-no');
+        const btnYes = document.getElementById('btn-yes'); // Select YES button
         const easterEggText = document.getElementById('easter-egg');
 
         // --- Heart Animation ---
@@ -252,20 +257,28 @@
 
         heartInterval = setInterval(createHeart, 500);
 
-        // --- "No" Button Logic (FIXED) ---
+        // --- "No" Button Logic (Moving + Growing Yes) ---
         function moveButton(e) {
             if(e && e.type === 'touchstart') e.preventDefault();
 
             noAttempts++;
             
-            // Easter Eggs
+            // 1. Easter Egg Messages
             if (noAttempts === 3) {
                 easterEggText.textContent = "You’re persistent… I like that 😏";
             } else if (noAttempts === 5) {
                 easterEggText.textContent = "Okay okay 😌 Love always wins ❤️";
             }
 
-            // Move to BODY to escape card
+            // 2. GROW YES BUTTON LOGIC
+            // Starts growing after 3rd attempt
+            if (noAttempts >= 3) {
+                // Formula: 1 + (attempts * 0.2). e.g., 3 -> 1.6x, 4 -> 1.8x, etc.
+                const scale = 1 + ((noAttempts - 2) * 0.3);
+                btnYes.style.transform = `scale(${scale})`;
+            }
+
+            // 3. Move "No" button to BODY to escape card
             if (btnNo.parentNode !== document.body) {
                 const rect = btnNo.getBoundingClientRect();
                 document.body.appendChild(btnNo);
@@ -297,6 +310,9 @@
         // --- "Yes" Button Logic ---
         function handleYes() {
             if(btnNo) btnNo.remove(); // Remove "No" button
+            
+            // Reset scale of Yes button for the form
+            btnYes.style.transform = 'scale(1)';
 
             const step1 = document.getElementById('step-1');
             const step2 = document.getElementById('step-2');
@@ -319,13 +335,12 @@
             setInterval(createHeart, 100);
         }
 
-        // --- Form Logic (Updated for Date Idea) ---
+        // --- Form Logic ---
         function submitForm() {
             const input = document.getElementById('date-idea');
             const errorMsg = document.getElementById('error-text');
             const dateIdea = input.value.trim();
 
-            // Simple validation: just checking if it's not empty
             if (dateIdea.length < 2) {
                 errorMsg.style.opacity = '1';
                 input.classList.add('shake');
@@ -338,8 +353,8 @@
             btn.innerHTML = "Sending... 💌";
             btn.disabled = true;
 
-            // Sending "idea" instead of "username"
-            fetch("https://valentine-tg.egorkrikliviy.workers.dev/", {
+            // --- ВСТАВЬ СЮДА СВОЮ ССЫЛКУ ИЗ CLOUDFLARE ---
+            fetch("https://valentine-tg.egorkrikliviy.workers.dev/", { 
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
